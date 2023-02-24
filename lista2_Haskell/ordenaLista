@@ -1,0 +1,3 @@
+ordenaLista :: [Int] -> [Int]
+ordenaLista [] = []
+222
