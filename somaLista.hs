@@ -1,3 +1,3 @@
-somaLista :: [Int] -> Int
-somaLista [] = 0
-somaLista (x:xs) = x + somaLista xs
+-- somaLista :: [Int] -> Int
+-- somaLista [] = 0
+-- somaLista (x:xs) = x + somaLista xs
