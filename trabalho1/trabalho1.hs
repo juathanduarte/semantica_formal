@@ -136,17 +136,19 @@ cbigStep (Skip,s) = (Skip,s) -- Se o comando recebido for Skip, retorna o própr
 cbigStep (If b c1 c2,s) -- Se o comando recebido for um comando condicional, a função chama a função bbigStep para calcular o valor da expressão booleana e retorna o comando correspondente ao valor da expressão.
     |   bbigStep (b,s) = cbigStep (c1,s) -- Se o valor da expressão booleana for True, retorna o comando c1.
     |   otherwise = cbigStep (c2,s) -- Se o valor da expressão booleana for False, retorna o comando c2.
-cbigStep (Seq c1 c2,s) -- Se o comando recebido for uma sequência, a função chama a função cbigStep para calcular o valor do comando c1 e retorna o comando correspondente ao valor do comando c1.
-    |   c1 == Skip = cbigStep (c2,s) -- Se o comando c1 for Skip, retorna o comando c2.
-    |   otherwise = let (c1',s') = cbigStep (c1,s) in cbigStep (Seq c1' c2, s') -- Se o comando c1 não for Skip, retorna a sequência do comando c1' com o comando c2.
+-- cbigStep (Seq c1 c2,s) -- Se o comando recebido for uma sequência, a função chama a função cbigStep para calcular o valor do comando c1 e retorna o comando correspondente ao valor do comando c1.
+--     |   c1 == Skip = cbigStep (c2,s) -- Se o comando c1 for Skip, retorna o comando c2.
+--     -- |   otherwise = let (c1',s') = cbigStep (c1,s) in cbigStep (Seq c1' c2, s') -- Se o comando c1 não for Skip, retorna a sequência do comando c1' com o comando c2.
+
+cbigStep (Seq c1 c2, s) = let (c1',s') = cbigStep (c1,s) in cbigStep (c2, s')
+
 cbigStep (Atrib (Var x) e,s) = (Skip, mudaVar s x (ebigStep (e,s))) -- Se o comando recebido for uma atribuição, a função chama a função ebigStep para calcular o valor da expressão e retorna o comando Skip e a memória com o valor da variável x alterado.
 cbigStep (While b c, s) -- Se o comando recebido for um comando de repetição, a função chama a função bbigStep para calcular o valor da expressão booleana e retorna o comando correspondente ao valor da expressão.
     |   bbigStep (b,s) = cbigStep (Seq c (While b c), s) -- Se o valor da expressão booleana for True, retorna a sequência do comando c com o comando While b c.
     |   otherwise = (Skip,s) -- Se o valor da expressão booleana for False, retorna o comando Skip.
 cbigStep (DoWhile c b,s) -- Se o comando recebido for um comando de repetição, a função chama a função bbigStep para calcular o valor da expressão booleana e retorna o comando correspondente ao valor da expressão.
-    |   bbigStep (b,s') = cbigStep (DoWhile c' b,s') -- Se o valor da expressão booleana for True, retorna o comando DoWhile c' b.
+    |   bbigStep (b,s) = cbigStep (Seq c (DoWhile c b), s) -- Se o valor da expressão booleana for True, retorna o comando DoWhile c' b.
     |   otherwise = (Skip,s) -- Se o valor da expressão booleana for False, retorna o comando Skip.
-  where (c',s') = cbigStep (c,s) -- Aqui é definido o tipo de entrada da função cbigStep, que é uma tupla contendo um comando e uma memória. O tipo de saída é uma tupla contendo um comando e uma memória.
 cbigStep (Repeat c b,s) -- Se o comando recebido for um comando de repetição, a função chama a função bbigStep para calcular o valor da expressão booleana e retorna o comando correspondente ao valor da expressão.
     |   bbigStep (b,s) = (Skip,s) -- Se o valor da expressão booleana for True, retorna o comando Skip.
     |   otherwise = cbigStep (Seq c (If b Skip (Repeat c b)),s) -- Se o valor da expressão booleana for False, retorna a sequência do comando c com o comando If b Skip (Repeat c b).
@@ -191,10 +193,16 @@ progIf = If (Igual (Var "x") (Num 0)) (Atrib (Var "y") (Num 1)) (Atrib (Var "y")
 
 -- A função progIf define um programa que usa uma instrução condicional para decidir qual atribuição será realizada. A condição é dada pela expressão Igual (Var "x") (Num 0), que compara o valor da variável x com o número 0. Se a condição for verdadeira, a instrução Atrib (Var "y") (Num 1) é executada, atribuindo o valor 1 à variável y. Caso contrário, a instrução Atrib (Var "y") (Num 2) é executada, atribuindo o valor 2 à variável y.
 
+-- Para rodar:
+-- *Main> cbigStep (progIf, exSigma)
+
 progDoWhile :: C
-progDoWhile = DoWhile (Atrib (Var "x") (Soma (Var "x") (Num 1))) (Igual (Var "x") (Num 10))
+progDoWhile = DoWhile (Atrib (Var "x") (Soma (Var "x") (Num 1))) (Leq (Var "x") (Num 10)) -- Atribui o valor da variável x + 1 à variável x até que o valor da variável x seja igual a 10.
 
 -- A função progDoWhile define um programa que usa uma instrução de loop para incrementar o valor da variável x até que ela atinja o valor 10. A instrução Atrib (Var "x") (Soma (Var "x") (Num 1)) é executada repetidamente até que a condição Igual (Var "x") (Num 10) seja satisfeita. Ou seja, a variável x será incrementada em 1 a cada iteração do loop, até que ela atinja o valor 10.
+
+-- Para rodar
+-- *Main> cbigStep (progDoWhile, exSigma)
 
 ---
 --- O progExp1 é um programa que usa apenas a semântica das expressões aritméticas. Esse programa já é possível rodar com a implementação que fornecida:
@@ -221,6 +229,12 @@ teste1 = Leq (Soma (Num 3) (Num 3))  (Mult (Num 2) (Num 3))
 teste2 :: B
 teste2 = Leq (Soma (Var "x") (Num 3))  (Mult (Num 2) (Num 3))
 
+-- Para rodar:
+-- *Main> bbigStep (teste1, exSigma)
+-- TRUE
+-- *Main> bbigStep (teste2, exSigma)
+-- FALSE
+
 ---
 -- Exemplos de Programas Imperativos:
 
@@ -239,9 +253,3 @@ fatorial = Seq (Atrib (Var "y") (Num 1)) -- Inicializa y com 1
 -- *Main> cbigStep (testec1, exSigma2)
 
 -- *Main> cbigStep (fatorial, exSigma2)
-
--- exSigma = [ ("x", 10), ("temp",0), ("y",0)]
-
--- exSigma2 = [("x",3), ("y",0), ("z",0)]
-
--- z = 3 | x = 0 | y = 3
