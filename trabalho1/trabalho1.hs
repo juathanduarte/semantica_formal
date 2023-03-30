@@ -224,12 +224,24 @@ teste2 = Leq (Soma (Var "x") (Num 3))  (Mult (Num 2) (Num 3))
 ---
 -- Exemplos de Programas Imperativos:
 
-testec1 :: C
-testec1 = Seq (Seq (Atrib (Var "z") (Var "x")) (Atrib (Var "x") (Var "y")))
-               (Atrib (Var "y") (Var "z"))
+testec1 :: C -- Troca o valor das variáveis x e y
+testec1 = Seq (Seq (Atrib (Var "z") (Var "x")) (Atrib (Var "x") (Var "y"))) -- Atribui o valor de x à z e o valor de y à x
+               (Atrib (Var "y") (Var "z")) -- Atribui o valor de z à y
 
-fatorial :: C
-fatorial = Seq (Atrib (Var "y") (Num 1))
-                (While (Not (Igual (Var "x") (Num 1)))
-                       (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x")))
-                            (Atrib (Var "x") (Sub (Var "x") (Num 1)))))
+fatorial :: C -- Calcula o fatorial de x e armazena o resultado em y
+fatorial = Seq (Atrib (Var "y") (Num 1)) -- Inicializa y com 1
+                (While (Not (Igual (Var "x") (Num 1))) -- Enquanto x for diferente de 1
+                       (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x"))) -- y = y * x
+                            (Atrib (Var "x") (Sub (Var "x") (Num 1))))) -- x = x - 1
+
+-- Testando programas
+
+-- *Main> cbigStep (testec1, exSigma2)
+
+-- *Main> cbigStep (fatorial, exSigma2)
+
+-- exSigma = [ ("x", 10), ("temp",0), ("y",0)]
+
+-- exSigma2 = [("x",3), ("y",0), ("z",0)]
+
+-- z = 3 | x = 0 | y = 3
