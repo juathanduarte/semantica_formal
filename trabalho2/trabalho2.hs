@@ -1,3 +1,5 @@
+-- Integrantes: Juathan Coelho Duarte - 19200989 | Lucas Simões Ferreira - 20102119
+
 -- Definição das árvore sintática para representação dos programas:
 
 data E = Num Int
