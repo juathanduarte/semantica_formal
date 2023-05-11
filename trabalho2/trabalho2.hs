@@ -24,7 +24,7 @@ data C = While B C
     | Seq C C
     | Atrib E E
     | Skip
-   deriving(Eq,Show)                
+   deriving(Eq,Show)
 
 
 -----------------------------------------------------
@@ -72,7 +72,7 @@ procuraVar ((s,i):xs) v
 mudaVar :: Memoria -> String -> Int -> Memoria
 mudaVar [] v n = error ("Variavel " ++ v ++ " nao definida no estado")
 mudaVar ((s,i):xs) v n
-  | s == v     = ((s,n):xs)
+  | s == v     = (s,n):xs
   | otherwise  = (s,i): mudaVar xs v n
 
 
@@ -121,14 +121,14 @@ smallStepB (Or b1 b2, s) = let (bl,sl) = smallStepB (b1, s)
                            in (Or bl b2, sl)
 
 --smallStepB (Leq e1 e2, s)
-smallStepB (Leq (Num n1) (Num n2), s) = if (n1 <= n2) then (TRUE, s) else (FALSE, s)
+smallStepB (Leq (Num n1) (Num n2), s) = if n1 <= n2 then (TRUE, s) else (FALSE, s)
 smallStepB (Leq (Num n) e, s) = let (el,sl) = smallStepE (e, s)
                                 in (Leq (Num n) el, sl)
 smallStepB (Leq e1 e2, s) = let (el,sl) = smallStepE (e1, s)
                             in (Leq el e2, sl)
 
 --smallStepB (Igual e1 e2, s) = -- recebe duas expressões aritméticas e devolve um valor booleano dizendo se são iguais
-smallStepB (Igual (Num n1) (Num n2), s) = if (n1 == n2) then (TRUE, s) else (FALSE, s)
+smallStepB (Igual (Num n1) (Num n2), s) = if n1 == n2 then (TRUE, s) else (FALSE, s)
 smallStepB (Igual (Num n) e, s) = let (el,sl) = smallStepE (e, s)
                                   in (Igual (Num n) el, sl)
 smallStepB (Igual e1 e2, s) = let (el,sl) = smallStepE (e1, s)
@@ -167,7 +167,7 @@ isFinalE _       = False
 
 
 interpretadorE :: (E,Memoria) -> (E, Memoria)
-interpretadorE (e,s) = if (isFinalE e) then (e,s) else interpretadorE (smallStepE (e,s))
+interpretadorE (e,s) = if isFinalE e then (e,s) else interpretadorE (smallStepE (e,s))
 
 --- Interpretador para expressões booleanas
 
@@ -180,7 +180,7 @@ isFinalB _       = False
 -- Descomentar quanto a função smallStepB estiver implementada:
 
 interpretadorB :: (B,Memoria) -> (B, Memoria)
-interpretadorB (b,s) = if (isFinalB b) then (b,s) else interpretadorB (smallStepB (b,s))
+interpretadorB (b,s) = if isFinalB b then (b,s) else interpretadorB (smallStepB (b,s))
 
 
 -- Interpretador da Linguagem Imperativa
@@ -192,7 +192,7 @@ isFinalC _       = False
 -- Descomentar quando a função smallStepC estiver implementada:
 
 interpretadorC :: (C,Memoria) -> (C, Memoria)
-interpretadorC (c,s) = if (isFinalC c) then (c,s) else interpretadorC (smallStepC (c,s))
+interpretadorC (c,s) = if isFinalC c then (c,s) else interpretadorC (smallStepC (c,s))
 
 
 --------------------------------------
@@ -209,7 +209,7 @@ exProg1 = Seq (Atrib (Var "x") (Num 10)) (If (Leq (Var "x") (Num 0)) (Atrib (Var
 
 exProg2 :: C
 -- usando o while
-exProg2 = (DoWhile (Atrib (Var "x") (Soma (Var "x") (Num 1))) (Leq (Var "x") (Num 20)))
+exProg2 = DoWhile (Atrib (Var "x") (Soma (Var "x") (Num 1))) (Leq (Var "x") (Num 20))
 
 
 
@@ -225,7 +225,7 @@ progExp1 :: E
 progExp1 = Soma (Num 3) (Soma (Var "x") (Var "y"))
 
 progTestB :: B
-progTestB = (Leq (Var "y") (Var "x"))
+progTestB = Leq (Var "y") (Var "x")
 
 ---
 --- para rodar:
@@ -254,21 +254,21 @@ progTestB = (Leq (Var "y") (Var "x"))
 
 
 teste1 :: B
-teste1 = (Leq (Soma (Num 3) (Num 3))  (Mult (Num 2) (Num 3)))
+teste1 = Leq (Soma (Num 3) (Num 3))  (Mult (Num 2) (Num 3))
 
 teste2 :: B
-teste2 = (Leq (Soma (Var "x") (Num 3))  (Mult (Num 2) (Num 3)))
+teste2 = Leq (Soma (Var "x") (Num 3))  (Mult (Num 2) (Num 3))
 
 
 ---
 -- Exemplos de Programas Imperativos:
 
 testec1 :: C
-testec1 = (Seq (Seq (Atrib (Var "z") (Var "x")) (Atrib (Var "x") (Var "y"))) 
-               (Atrib (Var "y") (Var "z")))
+testec1 = Seq (Seq (Atrib (Var "z") (Var "x")) (Atrib (Var "x") (Var "y")))
+               (Atrib (Var "y") (Var "z"))
 
 fatorial :: C
-fatorial = (Seq (Atrib (Var "y") (Num 1))
+fatorial = Seq (Atrib (Var "y") (Num 1))
                 (While (Not (Igual (Var "x") (Num 1)))
                        (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x")))
-                            (Atrib (Var "x") (Sub (Var "x") (Num 1))))))
+                            (Atrib (Var "x") (Sub (Var "x") (Num 1)))))
